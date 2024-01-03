@@ -20,6 +20,7 @@ jobs:
   build:
     # 실행 환경 지정
     runs-on: ubuntu-latest
+    environment: main
 
     # Task의 sequence를 명시한다.
     steps:
@@ -66,6 +67,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: main
     steps:
       - name: Transfer Deploy Script use SCP
         uses: appleboy/scp-action@master
