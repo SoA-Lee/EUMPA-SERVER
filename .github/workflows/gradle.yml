@@ -20,7 +20,6 @@ jobs:
   build:
     # 실행 환경 지정
     runs-on: ubuntu-latest
-    environment: main
 
     # Task의 sequence를 명시한다.
     steps:
@@ -58,7 +57,7 @@ jobs:
         env:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           source: "./build/libs/*.jar"
           target: "/home/ubuntu/deploy"
@@ -74,7 +73,7 @@ jobs:
         env:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           source: "deploy.sh"
           target: "/home/ubuntu/deploy"
@@ -84,7 +83,7 @@ jobs:
         env:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           script_stop: true
           script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
