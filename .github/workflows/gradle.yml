@@ -59,36 +59,83 @@ jobs:
       - name: Copy Jar
         run: cp ./build/libs/*.jar ./deploy/
 
-#      - name: Deploy
-#        run: java -jar ./build/libs/*.jar
+      # Upload artifact
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: eumpa
+#          path: build/libs/*.jar
+
+
+      # Transfer jar file to deploy dir
+#      - name: Deploy Prod use SCP
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          source: "./build/libs/*.jar"
+#          target: "/home/ubuntu/deploy"
+#          strip_components: 2
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-#      - name: Setup SSH
-#        uses: webfactory/ssh-agent@v0.5.4
+#      - name: Download artifact
+#        uses: actions/download-artifact@v2
 #        with:
-#          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          name: eumpa
 #
-#      - name: SCP transfer
-#        run: scp ./deploy/*-SNAPSHOT.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SSH_USER }}/server/
-#
+#      - name: Setup SSH
+#        uses: webfactory/ssh-agent@v0.8.0
+#        with:
+#            ssh-private-key: ${{ secrets.SSH_KEY }}
+#      - name: Scp Transfer
+#        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
 #      - name: Execute remote commands
 #        run: |
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sudo fuser -k 8080/tcp"
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sudo nohup java -jar /home/${{ secrets.SSH_USER }}/server/*.jar &"
+#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
+#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
 
-      - name: ssh scp ssh pipelines
-        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      - name: scp-pipeline
+        uses: cross-the-world/scp-pipeline@v1.2.1
+        env:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
-            host: ${{ secrets.SERVER_HOST }}
-            user: ${{ secrets.SSH_USER }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            first_ssh: |
-              cd /home/${{ secrets.SSH_USER }}/server/ && rm -f *-SNAPSHOT.jar && echo 'delete success'
-            scp: |
-              ./deploy/*-SNAPSHOT.jar => /home/${{ secrets.SSH_USER }}/server/
-            last_ssh: |
-              cd /home/${{ secrets.SSH_USER }}/server/
-              sudo -S sh -c "nohup java -jar *-SNAPSHOT.jar &" <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          connect_timeout: 10s
+          local: './deploy/*'
+          remote: /home/${{ secrets.SSH_USER }}/deploy/
+          scp: |
+            ./deploy/*-SNAPSHOT.jar => "/home/${{ secrets.SSH_USER }}/deploy/"
+
+      - name: ssh connection
+        uses: cross-the-world/ssh-pipeline@master
+        env:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
+          script: |
+            cd /home/${{ secrets.SSH_USER }}/deploy/
+            chmod +x deploy.sh && sh deploy.sh
+
+#      - name: Transfer Deploy Script use SCP
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          source: "scripts/deploy.sh"
+#          target: "/home/ubuntu/deploy"
+
+#      - name: Execute Server Init Script
+#        uses: appleboy/ssh-action@v1.0.2
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          script_stop: true
+#          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
