@@ -52,8 +52,12 @@ jobs:
         run: ./gradlew clean build
 
       # Transfer jar file to deploy dir
-      - name: Scp File
-        run: scp -i ${{ secrets.SSH_PRIVATE_KEY }} ./build/libs/*.jar "${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy"
+      - name: Deploy Prod use SCP
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: scp -i $SSH_PRIVATE_KEY ./build/libs/*.jar "$SSH_USER@$SERVER_HOST:/home/ubuntu/deploy"
 
       # Transfer jar file to deploy dir
 #      - name: Deploy Prod use SCP
@@ -71,20 +75,33 @@ jobs:
     runs-on: ubuntu-latest
     environment: main
     steps:
-      - name: Transfer Deploy Script use SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          username: ${{ secrets.USERNAME }}
-          host: ${{ secrets.HOST }}
-          password: ${{ secrets.PASSWORD }}
-          source: "deploy.sh"
-          target: "/home/ubuntu/deploy"
-
       - name: Execute Server Init Script
-        uses: appleboy/ssh-action@v1.0.2
-        with:
-          username: ${{ secrets.USERNAME }}
-          host: ${{ secrets.HOST }}
-          password: ${{ secrets.PASSWORD }}
-          script_stop: true
-          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run:
+          ssh -i $SSH_PRIVATE_KEY $SSH_USER@$SERVER_HOST && chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
+
+
+#  deploy:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Transfer Deploy Script use SCP
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          source: "deploy.sh"
+#          target: "/home/ubuntu/deploy"
+#
+#      - name: Execute Server Init Script
+#        uses: appleboy/ssh-action@v1.0.2
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          script_stop: true
+#          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
