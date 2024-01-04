@@ -52,15 +52,19 @@ jobs:
         run: ./gradlew clean build
 
       # Transfer jar file to deploy dir
-      - name: Deploy Prod use SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          username: ${{ secrets.USERNAME }}
-          host: ${{ secrets.HOST }}
-          password: ${{ secrets.PASSWORD }}
-          source: "./build/libs/*.jar"
-          target: "/home/ubuntu/deploy"
-          strip_components: 2
+      - name: Scp File
+        run: scp -i ${{ secrets.SSH_PRIVATE_KEY }} ./build/libs/*.jar "${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy"
+
+      # Transfer jar file to deploy dir
+#      - name: Deploy Prod use SCP
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          username: ${{ secrets.USERNAME }}
+#          host: ${{ secrets.HOST }}
+#          password: ${{ secrets.PASSWORD }}
+#          source: "./build/libs/*.jar"
+#          target: "/home/ubuntu/deploy"
+#          strip_components: 2
 
   deploy:
     needs: build
