@@ -54,107 +54,35 @@ jobs:
       - name: Copy Jar
         run: cp ./build/libs/*.jar ./deploy/
 
-      # Upload artifact
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: eumpa
-          path: build/libs/*.jar
-
-      - name: Upload script
-        uses: actions/upload-artifact@v2
-        with:
-          name: eumpa
-          path: scripts/*.sh
-
       # Transfer jar file to deploy dir
-#      - name: Deploy Prod use SCP
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          source: "./build/libs/*.jar"
-#          target: "/home/ubuntu/deploy"
-#          strip_components: 2
+      - name: Deploy Prod use SCP
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          username: ${{ secrets.SSH_USER }}
+          host: ${{ secrets.SERVER_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./build/libs/*.jar"
+          target: "/home/ubuntu/deploy"
+          strip_components: 2
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
+      - name: Transfer Deploy Script use SCP
+        uses: appleboy/scp-action@v0.1.6
         with:
-          name: eumpa
-
-      - name: Operations
-        uses: alinz/ssh-scp-action@master
-        env:
-          HELLO: cool
-          MESSAGE: hello world
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          port: 22
-          user: ${{ secrets.USER }}
-          # runs this on remove server
-          ssh_before: |
-            rm -rf *-SNAPSHOT.jar *.sh
-            echo $HELLO
-            echo $MESSAGE
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "scripts/deploy.sh"
+          target: "/home/ubuntu/deploy"
 
-          # then uploads these 2 files
-          scp: |
-            *-SNAPSHOT.jar ${{ secrets.USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.USER }}/deploy/
-            *.sh ${{ secrets.USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.USER }}/deploy/
-
-          # then run these commands
-          ssh_after: |
-            cd /home/${{secrets.USER}}/deploy/
-            chmod +x deploy.sh && sh deploy.sh
-
-#
-#      - name: Setup SSH
-#        uses: webfactory/ssh-agent@v0.8.0
-#        with:
-#            ssh-private-key: ${{ secrets.SSH_KEY }}
-
-#      - name: scp-pipeline
-#        uses: cross-the-world/scp-pipeline@v1.2.1
-#        with:
-#          host: ${{secrets.HOST}}
-#          user: ${{secrets.USER}}
-#          key: ${{secrets.KEY}}
-#          connect_timeout: 10s
-#          local: './deploy/*'
-#          remote: /home/${{secrets.USER}}/deploy/
-#          scp: |
-#            ./deploy/*-SNAPSHOT.jar => "/home/${{secrets.USER}}/deploy/"
-#
-#      - name: ssh connection
-#        uses: cross-the-world/ssh-pipeline@master
-#        with:
-#          host: ${{secrets.HOST}}
-#          user: ${{secrets.USER}}
-#          key: ${{secrets.KEY}}
-#          script: |
-#            cd /home/${{secrets.USER}}/deploy/
-#            chmod +x deploy.sh && sh deploy.sh
-
-#      - name: Transfer Deploy Script use SCP
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          source: "scripts/deploy.sh"
-#          target: "/home/ubuntu/deploy"
-
-#      - name: Execute Server Init Script
-#        uses: appleboy/ssh-action@v1.0.2
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          script_stop: true
-#          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
+      - name: Execute Server Init Script
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          username: ${{ secrets.SSH_USER }}
+          host: ${{ secrets.SERVER_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
