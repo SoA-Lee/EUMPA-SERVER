@@ -39,11 +39,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      - name: Build with Gradle
-#        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
-#        with:
-#          arguments: build
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -60,12 +55,17 @@ jobs:
         run: cp ./build/libs/*.jar ./deploy/
 
       # Upload artifact
-#      - name: Upload artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: eumpa
-#          path: build/libs/*.jar
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: eumpa
+          path: build/libs/*.jar
 
+      - name: Upload script
+        uses: actions/upload-artifact@v2
+        with:
+          name: eumpa
+          path: scripts/*.sh
 
       # Transfer jar file to deploy dir
 #      - name: Deploy Prod use SCP
@@ -82,29 +82,42 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-#      - name: Download artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: eumpa
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: eumpa
+
+      - name: Operations
+        uses: alinz/ssh-scp-action@master
+        env:
+          HELLO: cool
+          MESSAGE: hello world
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          port: 22
+          user: ${{ secrets.USER }}
+          # runs this on remove server
+          ssh_before: |
+            rm -rf *-SNAPSHOT.jar *.sh
+            echo $HELLO
+            echo $MESSAGE
+
+          # then uploads these 2 files
+          scp: |
+            *-SNAPSHOT.jar ${{ secrets.USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.USER }}/deploy/
+            *.sh ${{ secrets.USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.USER }}/deploy/
+
+          # then run these commands
+          ssh_after: |
+            cd /home/${{secrets.USER}}/deploy/
+            chmod +x deploy.sh && sh deploy.sh
+
 #
 #      - name: Setup SSH
 #        uses: webfactory/ssh-agent@v0.8.0
 #        with:
 #            ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: Scp Transfer
-        env:
-          HOST: "${{secrets.HOST}}"
-          USER: "${{secrets.USER}}"
-          KEY: "${{secrets.KEY}}"
-        run: sudo scp -i $KEY *.jar scripts/deploy.sh "$USER@$HOST:/home/ubuntu/deploy"
-
-      - name: Execute remote commands
-        env:
-          HOST: "${{secrets.HOST}}"
-          USER: "${{secrets.USER}}"
-          KEY: "${{secrets.KEY}}"
-        run:
-          sudo ssh -i $KEY $USER@$HOST && chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
 
 #      - name: scp-pipeline
 #        uses: cross-the-world/scp-pipeline@v1.2.1
