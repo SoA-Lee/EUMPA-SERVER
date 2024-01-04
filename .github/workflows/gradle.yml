@@ -84,11 +84,11 @@ jobs:
         with:
             ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Scp Transfer
-        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/deploy
+        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
       - name: Execute remote commands
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "chmod +x /home/ubuntu/deploy/deploy.sh"
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "sh /home/ubuntu/deploy/deploy.sh"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
 
 
 #      - name: Transfer Deploy Script use SCP
