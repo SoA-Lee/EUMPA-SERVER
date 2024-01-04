@@ -82,7 +82,7 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
-            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+            ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Scp Transfer
         run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/deploy
       - name: Execute remote commands
