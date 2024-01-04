@@ -53,11 +53,11 @@ jobs:
 
       # Transfer jar file to deploy dir
       - name: Deploy Prod use SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.4
         with:
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
-          KEY: ${{ secrets.KEY }}
+          username: ${{ secrets.USERNAME }}
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.KEY }}
           source: "./build/libs/*.jar"
           target: "/home/ubuntu/deploy"
           strip_components: 2
@@ -68,19 +68,19 @@ jobs:
     environment: main
     steps:
       - name: Transfer Deploy Script use SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.4
         with:
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
-          KEY: ${{ secrets.KEY }}
+          username: ${{ secrets.USERNAME }}
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.KEY }}
           source: "deploy.sh"
           target: "/home/ubuntu/deploy"
 
       - name: Execute Server Init Script
         uses: appleboy/ssh-action@v1.0.2
         with:
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
-          KEY: ${{ secrets.KEY }}
+          username: ${{ secrets.USERNAME }}
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.KEY }}
           script_stop: true
           script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
