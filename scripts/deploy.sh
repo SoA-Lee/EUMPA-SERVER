@@ -1,6 +1,6 @@
 #!/bin/bash
  echo "> now ing app pid find!"
- CURRENT_PID=$(pgrep -f eumpa)
+ CURRENT_PID=$(pgrep -f delivery)
  echo "$CURRENT_PID"
  if [ -z $CURRENT_PID ]; then
          echo "> no ing app."
@@ -12,7 +12,7 @@
  echo "> new app deploy"
 
  cd /home/ubuntu/deploy
- JAR_NAME=$(ls | grep 'eumpa' | tail -n 1)
+ JAR_NAME=$(ls | grep 'delivery' | tail -n 1)
  echo "> JAR Name: $JAR_NAME"
 
  # nohup java -jar -Duser.timezone=Asia/Seoul $JAR_NAME &
