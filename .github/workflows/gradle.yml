@@ -96,7 +96,7 @@ jobs:
           HOST: ${{secrets.HOST}}
           USER: ${{secrets.USER}}
           KEY: ${{secrets.KEY}}
-        run: sudo scp -i $KEY ./deploy/*.jar scripts/deploy.sh "$USER@$HOST:/home/ubuntu/deploy"
+        run: sudo scp -i $KEY *.jar scripts/deploy.sh "$USER@$HOST:/home/ubuntu/deploy"
 
       - name: Execute remote commands
         env:
