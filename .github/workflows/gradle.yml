@@ -93,16 +93,16 @@ jobs:
 #            ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Scp Transfer
         env:
-          HOST: ${{secrets.HOST}}
-          USER: ${{secrets.USER}}
-          KEY: ${{secrets.KEY}}
+          HOST: "${{secrets.HOST}}"
+          USER: "${{secrets.USER}}"
+          KEY: "${{secrets.KEY}}"
         run: sudo scp -i $KEY *.jar scripts/deploy.sh "$USER@$HOST:/home/ubuntu/deploy"
 
       - name: Execute remote commands
         env:
-          HOST: ${{secrets.HOST}}
-          USER: ${{secrets.USER}}
-          KEY: ${{secrets.KEY}}
+          HOST: "${{secrets.HOST}}"
+          USER: "${{secrets.USER}}"
+          KEY: "${{secrets.KEY}}"
         run:
           sudo ssh -i $KEY $USER@$HOST && chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
 
