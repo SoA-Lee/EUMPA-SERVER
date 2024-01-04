@@ -9,11 +9,17 @@ name: Spring Boot & Gradle CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+
+#본인이 설정한 값을 여기서 채워넣기
+#리전,버킷 이름, CodeDeploy앱 이름, CodeDeploy배포 그룹 이름
+env:
+  AWS_REGION: ap-northeast-2
 
 permissions:
+  id-token: write
   contents: read
 
 jobs:
@@ -39,11 +45,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      - name: Build with Gradle
-#        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
-#        with:
-#          arguments: build
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -59,81 +60,32 @@ jobs:
       - name: Copy Jar
         run: cp ./build/libs/*.jar ./deploy/
 
-      # Upload artifact
-#      - name: Upload artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: eumpa
-#          path: build/libs/*.jar
+      # appspec.yml Copy
+#      - name: Copy appspec
+#        run: cp appspec.yml ./deploy/
 
+      - name: Copy Start Script
+        run: cp scripts/deploy.sh ./deploy/
 
-      # Transfer jar file to deploy dir
-#      - name: Deploy Prod use SCP
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          source: "./build/libs/*.jar"
-#          target: "/home/ubuntu/deploy"
-#          strip_components: 2
+      # 압축파일 형태로 전달
+      - name: Make zip file
+        run: zip -r -qq -j ./springboot-intro-build.zip ./deploy/
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-#      - name: Download artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: eumpa
-#
-#      - name: Setup SSH
-#        uses: webfactory/ssh-agent@v0.8.0
-#        with:
-#            ssh-private-key: ${{ secrets.SSH_KEY }}
-#      - name: Scp Transfer
-#        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
-#      - name: Execute remote commands
-#        run: |
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
-
-      - name: scp-pipeline
-        uses: cross-the-world/scp-pipeline@v1.2.1
+      # (4) AWS인증 (IAM사용자 Access Key, Secret Key활용)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          user: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          connect_timeout: 10s
-          local: './deploy/*'
-          remote: /home/${{ secrets.SSH_USER }}/deploy/
-          scp: |
-            ./deploy/*-SNAPSHOT.jar => "/home/${{ secrets.SSH_USER }}/deploy/"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: ssh connection
-        uses: cross-the-world/ssh-pipeline@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          user: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/${{ secrets.SSH_USER }}/deploy/
-            chmod +x deploy.sh && sh deploy.sh
-
-#      - name: Transfer Deploy Script use SCP
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          source: "scripts/deploy.sh"
-#          target: "/home/ubuntu/deploy"
-
-#      - name: Execute Server Init Script
-#        uses: appleboy/ssh-action@v1.0.2
-#        with:
-#          username: ${{ secrets.USERNAME }}
-#          host: ${{ secrets.HOST }}
-#          password: ${{ secrets.PASSWORD }}
-#          script_stop: true
-#          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
+      # S3 Bucket으로 copy
+      - name: Deliver to AWS S3
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+          --region ap-northeast-2 \
+          --acl private \
+          ./springboot-intro-build.zip s3://eumpa-deploy/
