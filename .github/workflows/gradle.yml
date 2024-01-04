@@ -91,34 +91,42 @@ jobs:
 #        uses: webfactory/ssh-agent@v0.8.0
 #        with:
 #            ssh-private-key: ${{ secrets.SSH_KEY }}
-#      - name: Scp Transfer
-#        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
-#      - name: Execute remote commands
-#        run: |
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
+      - name: Scp Transfer
+        env:
+          HOST: ${{secrets.HOST}}
+          USER: ${{secrets.USER}}
+          KEY: ${{secrets.KEY}}
+        run: sudo scp -i $KEY ./deploy/*.jar scripts/deploy.sh "$USER@$HOST:/home/ubuntu/deploy"
 
-      - name: scp-pipeline
-        uses: cross-the-world/scp-pipeline@v1.2.1
-        with:
-          host: ${{secrets.HOST}}
-          user: ${{secrets.USER}}
-          key: ${{secrets.KEY}}
-          connect_timeout: 10s
-          local: './deploy/*'
-          remote: /home/${{secrets.USER}}/deploy/
-          scp: |
-            ./deploy/*-SNAPSHOT.jar => "/home/${{secrets.USER}}/deploy/"
+      - name: Execute remote commands
+        env:
+          HOST: ${{secrets.HOST}}
+          USER: ${{secrets.USER}}
+          KEY: ${{secrets.KEY}}
+        run:
+          sudo ssh -i $KEY $USER@$HOST && chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
 
-      - name: ssh connection
-        uses: cross-the-world/ssh-pipeline@master
-        with:
-          host: ${{secrets.HOST}}
-          user: ${{secrets.USER}}
-          key: ${{secrets.KEY}}
-          script: |
-            cd /home/${{secrets.USER}}/deploy/
-            chmod +x deploy.sh && sh deploy.sh
+#      - name: scp-pipeline
+#        uses: cross-the-world/scp-pipeline@v1.2.1
+#        with:
+#          host: ${{secrets.HOST}}
+#          user: ${{secrets.USER}}
+#          key: ${{secrets.KEY}}
+#          connect_timeout: 10s
+#          local: './deploy/*'
+#          remote: /home/${{secrets.USER}}/deploy/
+#          scp: |
+#            ./deploy/*-SNAPSHOT.jar => "/home/${{secrets.USER}}/deploy/"
+#
+#      - name: ssh connection
+#        uses: cross-the-world/ssh-pipeline@master
+#        with:
+#          host: ${{secrets.HOST}}
+#          user: ${{secrets.USER}}
+#          key: ${{secrets.KEY}}
+#          script: |
+#            cd /home/${{secrets.USER}}/deploy/
+#            chmod +x deploy.sh && sh deploy.sh
 
 #      - name: Transfer Deploy Script use SCP
 #        uses: appleboy/scp-action@v0.1.7
