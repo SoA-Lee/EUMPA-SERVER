@@ -101,23 +101,23 @@ jobs:
       - name: scp-pipeline
         uses: cross-the-world/scp-pipeline@v1.2.1
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          user: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{secrets.HOST}}
+          user: ${{secrets.USER}}
+          key: ${{secrets.KEY}}
           connect_timeout: 10s
           local: './deploy/*'
-          remote: /home/${{ secrets.SSH_USER }}/deploy/
+          remote: /home/${{secrets.USER}}/deploy/
           scp: |
-            ./deploy/*-SNAPSHOT.jar => "/home/${{ secrets.SSH_USER }}/deploy/"
+            ./deploy/*-SNAPSHOT.jar => "/home/${{secrets.USER}}/deploy/"
 
       - name: ssh connection
         uses: cross-the-world/ssh-pipeline@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          user: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{secrets.HOST}}
+          user: ${{secrets.USER}}
+          key: ${{secrets.KEY}}
           script: |
-            cd /home/${{ secrets.SSH_USER }}/deploy/
+            cd /home/${{secrets.USER}}/deploy/
             chmod +x deploy.sh && sh deploy.sh
 
 #      - name: Transfer Deploy Script use SCP
