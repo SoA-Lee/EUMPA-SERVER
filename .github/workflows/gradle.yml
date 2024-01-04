@@ -60,7 +60,7 @@ jobs:
         with:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.PASSWORD }}
           source: "./build/libs/*.jar"
           target: "/home/ubuntu/deploy"
           strip_components: 2
@@ -74,7 +74,7 @@ jobs:
         with:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.PASSWORD }}
           source: "scripts/deploy.sh"
           target: "/home/ubuntu/deploy"
 
@@ -83,6 +83,6 @@ jobs:
         with:
           username: ${{ secrets.SSH_USER }}
           host: ${{ secrets.SERVER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.PASSWORD }}
           script_stop: true
           script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
