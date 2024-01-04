@@ -100,10 +100,11 @@ jobs:
 
       - name: scp-pipeline
         uses: cross-the-world/scp-pipeline@v1.2.1
-        with:
+        env:
           host: ${{ secrets.SERVER_HOST }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
           connect_timeout: 10s
           local: './deploy/*'
           remote: /home/${{ secrets.SSH_USER }}/deploy/
@@ -112,10 +113,11 @@ jobs:
 
       - name: ssh connection
         uses: cross-the-world/ssh-pipeline@master
-        with:
+        env:
           host: ${{ secrets.SERVER_HOST }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
           script: |
             cd /home/${{ secrets.SSH_USER }}/deploy/
             chmod +x deploy.sh && sh deploy.sh
