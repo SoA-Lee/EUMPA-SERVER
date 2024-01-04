@@ -113,11 +113,10 @@ jobs:
 
       - name: ssh connection
         uses: cross-the-world/ssh-pipeline@master
-        env:
+        with:
           host: ${{ secrets.SERVER_HOST }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-        with:
           script: |
             cd /home/${{ secrets.SSH_USER }}/deploy/
             chmod +x deploy.sh && sh deploy.sh
