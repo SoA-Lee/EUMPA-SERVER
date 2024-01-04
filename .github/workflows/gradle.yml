@@ -51,12 +51,20 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build
 
+      # 전송할 파일을 담을 디렉토리 생성
+      - name: Make Directory for deliver
+        run: mkdir deploy
+
+      # Jar 파일 Copy
+      - name: Copy Jar
+        run: cp ./build/libs/*.jar ./deploy/
+
       # Upload artifact
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: eumpa
-          path: build/libs/*.jar
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: eumpa
+#          path: build/libs/*.jar
 
 
       # Transfer jar file to deploy dir
@@ -74,22 +82,35 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: eumpa
+#      - name: Download artifact
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: eumpa
+#
+#      - name: Setup SSH
+#        uses: webfactory/ssh-agent@v0.8.0
+#        with:
+#            ssh-private-key: ${{ secrets.SSH_KEY }}
+#      - name: Scp Transfer
+#        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
+#      - name: Execute remote commands
+#        run: |
+#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
+#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
+          
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.0
+      - name: scp ssh pipelines
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
         with:
-            ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: Scp Transfer
-        run: scp *.jar scripts/deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/ubuntu/deploy
-      - name: Execute remote commands
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "chmod +x /home/ubuntu/deploy/deploy.sh"
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "sh /home/ubuntu/deploy/deploy.sh"
-
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          scp: |
+            ./deploy/*-SNAPSHOT.jar => /home/${{ secrets.SSH_USER }}/deploy/
+            scripts/deploy.sh => /home/${{ secrets.SSH_USER }}/deploy/
+          last_ssh: |
+            cd /home/${{ secrets.SSH_USER }}/deploy/
+            chmod +x deploy.sh && sh deploy.sh
 
 #      - name: Transfer Deploy Script use SCP
 #        uses: appleboy/scp-action@v0.1.7
