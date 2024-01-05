@@ -2,7 +2,6 @@ package com.eumpa.delivery.member.controller;
 
 import com.eumpa.delivery.member.model.dto.JoinReqDTO;
 import com.eumpa.delivery.member.service.MemberService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
