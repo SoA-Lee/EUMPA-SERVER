@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
-    @GetMapping("/")
+    @GetMapping("/cicd")
     public String home() {
         return "Hello CICD! version: ";
     }

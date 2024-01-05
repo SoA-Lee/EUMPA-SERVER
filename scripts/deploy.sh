@@ -11,8 +11,8 @@
  fi
  echo "> new app deploy"
 
- cd /home/ubuntu/deploy
- JAR_NAME=$(ls | grep 'delivery' | tail -n 1)
+ cd /home/ubuntu/deploy/build/libs
+ JAR_NAME=$(ls | grep 'SNAPSHOT.jar' | tail -n 1)
  echo "> JAR Name: $JAR_NAME"
 
  # nohup java -jar -Duser.timezone=Asia/Seoul $JAR_NAME &
