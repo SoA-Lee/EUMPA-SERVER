@@ -92,6 +92,8 @@ name: Spring Boot & Gradle CI/CD
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 permissions:
   id-token: write
@@ -148,10 +150,6 @@ jobs:
          source: "./build/libs/*.jar"
          target: "/home/ubuntu/deploy"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: Transfer Deploy Script use SCP
         uses: appleboy/scp-action@v0.1.6
         with:
