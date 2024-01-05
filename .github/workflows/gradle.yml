@@ -92,13 +92,6 @@ name: Spring Boot & Gradle CI/CD
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-#본인이 설정한 값을 여기서 채워넣기
-#리전,버킷 이름, CodeDeploy앱 이름, CodeDeploy배포 그룹 이름
-env:
-  AWS_REGION: ap-northeast-2
 
 permissions:
   id-token: write
@@ -165,7 +158,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           host: ${{ secrets.HOST }}
           key: ${{ secrets.KEY }}
-          source: "scripts/deploy.sh"
+          source: "./scripts/*.sh"
           target: "/home/ubuntu/deploy"
 
       - name: Execute Server Init Script
@@ -175,4 +168,4 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.KEY }}
           script_stop: true
-          script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
+          script: chmod +x /home/ubuntu/deploy/scripts/deploy.sh && sh /home/ubuntu/deploy/scripts/deploy.sh
