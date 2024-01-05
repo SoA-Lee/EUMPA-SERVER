@@ -151,10 +151,9 @@ jobs:
         with:
          username: ${{ secrets.USERNAME }}
          host: ${{ secrets.HOST }}
-         password: ${{ secrets.PASSWORD }}
+         key: ${{ secrets.KEY }}
          source: "./build/libs/*.jar"
          target: "/home/ubuntu/deploy"
-         strip_components: 2
 
   deploy:
     needs: build
@@ -165,7 +164,7 @@ jobs:
         with:
           username: ${{ secrets.USERNAME }}
           host: ${{ secrets.HOST }}
-          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.KEY }}
           source: "scripts/deploy.sh"
           target: "/home/ubuntu/deploy"
 
@@ -174,6 +173,6 @@ jobs:
         with:
           username: ${{ secrets.USERNAME }}
           host: ${{ secrets.HOST }}
-          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.KEY }}
           script_stop: true
           script: chmod +x /home/ubuntu/deploy/deploy.sh && sh /home/ubuntu/deploy/deploy.sh
