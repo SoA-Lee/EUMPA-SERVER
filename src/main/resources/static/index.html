@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>음식 배달 서비스</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<header>
+    <h1>음식 배달 서비스</h1>
+</header>
+<nav>
+    <ul>
+        <li><a href="#" id="joinLink">회원가입</a></li>
+        <li><a href="@{/member/login}">로그인</a></li>
+        <li><a href="@{/member/logout}">로그아웃</a></li>
+        <li><a href="@{/member/my}">마이페이지</a></li>
+        <li><a href="@{/posting/insert}">게시글 작성</a></li>
+        <li><a href="@{/posting/select}">게시글 조회</a></li>
+    </ul>
+</nav>
+
+<div id="joinForm" style="display: none;">
+    <form id="signupForm">
+        <label for="userId">아이디:</label>
+        <input type="text" id="userId" name="userId"><br><br>
+        <label for="name">이름:</label>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="phoneNumber">폰번호:</label>
+        <input type="text" id="phoneNumber" name="phonNumber"><br><br>
+        <input type="submit" value="가입하기">
+    </form>
+</div>
+
+<script>
+    document.getElementById("joinLink").addEventListener("click", function(event) {
+        event.preventDefault();
+        document.getElementById("joinForm").style.display = "block";
+    });
+
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const formData = {
+            userId: document.getElementById("userId").value,
+            name: document.getElementById("name").value,
+            phoneNumber: document.getElementById("phoneNumber").value
+        };
+
+        fetch('/member/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            alert('회원가입이 완료되었습니다!');
+            document.getElementById("joinForm").style.display = "none";
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+            alert('회원가입에 실패했습니다.');
+        });
+    });
+</script>
+</body>
+</html>
