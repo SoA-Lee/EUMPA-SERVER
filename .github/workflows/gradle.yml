@@ -165,7 +165,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           host: ${{ secrets.HOST }}
           key: ${{ secrets.KEY }}
-          source: "scripts/deploy.sh"
+          source: "./scripts/*.sh"
           target: "/home/ubuntu/deploy"
 
       - name: Execute Server Init Script
